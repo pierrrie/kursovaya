@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Пациенты</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Полное ФИО</th>
+            <th>Дата рождения</th>
+            <th>Телефон</th>
+            <th>Адрес</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for patient in patients %}
+        <tr>
+            <td>{{ patient.id }}</td>
+            <td>{{ patient.full_name }}</td>
+            <td>{{ patient.birth_date }}</td>
+            <td>{{ patient.phone }}</td>
+            <td>{{ patient.address }}</td>
+            <td>
+                <a href="/patients/{{ patient.id }}/" class="btn btn-sm btn-primary">Просмотр</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="/patients/create/" class="btn btn-success">Добавить пациента</a>
+
+{% endblock %}</content>
+<parameter name="filePath">c:\Users\admin\Desktop\курсовая\mysite\frontend\templates\patients.html

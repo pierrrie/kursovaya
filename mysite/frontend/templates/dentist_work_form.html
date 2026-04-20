@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>🔧 Создать наряд на выполнение работ</h2>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+        <label>Визит</label>
+        <select name="visit_id" class="form-control" required>
+            <option value="">-- Выберите визит --</option>
+            {% for visit in visits %}
+            <option value="{{ visit.id }}">{{ visit.patient_name }} - {{ visit.datetime|date:"d.m.Y H:i" }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="mb-3">
+        <label>Описание работ</label>
+        <textarea name="description" class="form-control" rows="3" 
+                  placeholder="Опишите выполняемые работы" required></textarea>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Используемые материалы</label>
+                <textarea name="materials" class="form-control" rows="2" 
+                          placeholder="Перечислите материалы"></textarea>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Номера зубов</label>
+                <input type="text" name="tooth_numbers" class="form-control" 
+                       placeholder="Например: 11,12,13">
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Продолжительность (минуты)</label>
+                <input type="number" name="duration_minutes" class="form-control" min="1">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Стоимость (руб.)</label>
+                <input type="number" name="cost" class="form-control" step="0.01" min="0">
+            </div>
+        </div>
+    </div>
+    
+    <div class="mb-3">
+        <label>Дата выполнения работ</label>
+        <input type="date" name="work_date" class="form-control" 
+               value="{% now 'Y-m-d' %}" required>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Создать наряд</button>
+    <a href="/dentist-documents/work-orders/" class="btn btn-secondary">Отмена</a>
+</form>
+
+{% endblock %}

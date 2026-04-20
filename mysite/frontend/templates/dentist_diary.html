@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Дневник врача</h2>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="btn-group" role="group">
+            <a href="?day={{ prev_day }}" class="btn btn-secondary">← Предыдущий день</a>
+            <span class="btn btn-light disabled">{{ selected_day }}</span>
+            <a href="?day={{ next_day }}" class="btn btn-secondary">Следующий день →</a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>📅 Расписание приемов на {{ selected_day }}</h5>
+            </div>
+            <div class="card-body">
+                {% if appointments %}
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Пациент</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apt in appointments %}
+                            <tr>
+                                <td><strong>{{ apt.time }}</strong></td>
+                                <td>{{ apt.patient_name }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ apt.status|title }}</span>
+                                </td>
+                                <td>
+                                    <a href="/appointments/{{ apt.id }}/edit/" class="btn btn-sm btn-warning">✎ Редактировать</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted">На этот день приемов не запланировано</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>👨‍⚕️ Визиты на сегодня</h5>
+            </div>
+            <div class="card-body">
+                {% if today_visits %}
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Пациент</th>
+                                <th>Жалобы</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visit in today_visits %}
+                            <tr>
+                                <td><strong>{{ visit.time }}</strong></td>
+                                <td>{{ visit.patient_name }}</td>
+                                <td>{{ visit.complaints|default:"—" }}</td>
+                                <td>
+                                    <a href="/visits/{{ visit.id }}/edit/" class="btn btn-sm btn-warning">✎ Редактировать</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted">Визитов на сегодня нет</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>📋 Документы и направления</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="/dentist-documents/referrals/" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                            📄 Направления
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/dentist-documents/patient-history/" class="btn btn-outline-info btn-sm w-100 mb-2">
+                            📋 Выписка из карты
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/dentist-documents/medical-card/" class="btn btn-outline-success btn-sm w-100 mb-2">
+                            📄 Мед. карта 043/у
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/dentist-documents/work-orders/" class="btn btn-outline-warning btn-sm w-100 mb-2">
+                            🔧 Наряды на работы
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <a href="/appointments/create/" class="btn btn-primary">➕ Записать пациента на прием</a>
+        <a href="/visits/create/" class="btn btn-success">➕ Добавить визит</a>
+    </div>
+</div>
+
+{% endblock %}

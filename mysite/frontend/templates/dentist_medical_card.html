@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>📄 Медицинская карта стоматологического больного (форма 043/у)</h2>
+
+{% if not generated %}
+<form method="post" class="mb-4">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Выберите пациента</label>
+                <select name="patient_id" class="form-control" required>
+                    <option value="">-- Выберите пациента --</option>
+                    {% for patient in patients %}
+                    <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-success">Сформировать медицинскую карту</button>
+</form>
+{% else %}
+<div class="card">
+    <div class="card-header">
+        <h5>Медицинская карта стоматологического больного</h5>
+        <div class="float-end">
+            <button onclick="window.print()" class="btn btn-sm btn-outline-primary">🖨️ Печать</button>
+            <button onclick="downloadWord()" class="btn btn-sm btn-outline-success">📄 Скачать Word</button>
+            <button onclick="downloadExcel()" class="btn btn-sm btn-outline-info">📊 Скачать Excel</button>
+            <a href="/dentist-documents/medical-card/" class="btn btn-sm btn-outline-secondary">Новая карта</a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if card %}
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <strong>ФИО:</strong> {{ card.patient.full_name }}<br>
+                <strong>Дата рождения:</strong> {{ card.patient.birth_date }}<br>
+                <strong>Адрес:</strong> {{ card.patient.address|default:"—" }}
+            </div>
+            <div class="col-md-6">
+                <strong>Телефон:</strong> {{ card.patient.phone|default:"—" }}<br>
+                <strong>Аллергии:</strong> {{ card.patient.allergies|default:"—" }}
+            </div>
+        </div>
+        
+        <h6>Зубная формула:</h6>
+        <div class="mb-4">
+            {% for tooth_num, tooth_data in card.tooth_formula.items %}
+            <div class="d-inline-block border p-2 m-1 text-center" style="width: 40px;">
+                {{ tooth_num }}<br>
+                <small>{{ tooth_data.status|default:"—" }}</small>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <h6>История лечения:</h6>
+        {% for visit in card.visits %}
+        <div class="border rounded p-3 mb-3">
+            <div class="row">
+                <div class="col-md-2">
+                    <strong>{{ visit.datetime|date:"d.m.Y" }}</strong>
+                </div>
+                <div class="col-md-10">
+                    <strong>Жалобы:</strong> {{ visit.complaints|default:"—" }}<br>
+                    <strong>Диагноз:</strong> {{ visit.diagnosis|default:"—" }}<br>
+                    <strong>Лечение:</strong> {{ visit.exam_results|default:"—" }}<br>
+                    <strong>Рекомендации:</strong> {{ visit.notes|default:"—" }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="alert alert-warning">Данные не найдены</div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="mt-3">
+    <a href="/dentist-diary/" class="btn btn-secondary">← Назад в дневник</a>
+</div>
+
+{% endblock %}
+
+<script>
+function downloadWord() {
+    // Скачиваем Word документ с сервера
+    const patientId = {{ card.patient.id }};
+    window.location.href = `/api/documents/medical-card/${patientId}/word`;
+}
+
+function downloadExcel() {
+    // Создаем CSV файл для имитации Excel
+    const content = generateMedicalCardCSV();
+    const blob = new Blob([content], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'medical_card_043u.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function generateMedicalCardText() {
+    // Генерируем текстовое представление медицинской карты
+    let text = "МЕДИЦИНСКАЯ КАРТА СТОМАТОЛОГИЧЕСКОГО БОЛЬНОГО (Форма 043/у)\n\n";
+    
+    // Добавляем данные пациента
+    text += "Пациент: {{ card.patient.full_name }}\n";
+    text += "Дата рождения: {{ card.patient.birth_date }}\n";
+    text += "Адрес: {{ card.patient.address|default:'-' }}\n";
+    text += "Телефон: {{ card.patient.phone|default:'-' }}\n";
+    text += "Аллергии: {{ card.patient.allergies|default:'-' }}\n\n";
+    
+    // Добавляем зубную формулу
+    text += "ЗУБНАЯ ФОРМУЛА:\n";
+    {% for tooth_num, tooth_data in card.tooth_formula.items %}
+    text += "Зуб {{ tooth_num }}: {{ tooth_data.status|default:'-' }}\n";
+    {% endfor %}
+    text += "\n";
+    
+    // Добавляем историю лечения
+    text += "ИСТОРИЯ ЛЕЧЕНИЯ:\n";
+    {% for visit in card.visits %}
+    text += "Дата: {{ visit.datetime|date:'d.m.Y' }}\n";
+    text += "Жалобы: {{ visit.complaints|default:'-' }}\n";
+    text += "Диагноз: {{ visit.diagnosis|default:'-' }}\n";
+    text += "Лечение: {{ visit.exam_results|default:'-' }}\n";
+    text += "Рекомендации: {{ visit.notes|default:'-' }}\n\n";
+    {% endfor %}
+    
+    return text;
+}
+
+function generateMedicalCardCSV() {
+    let csv = "Поле,Значение\n";
+    csv += "ФИО,{{ card.patient.full_name }}\n";
+    csv += "Дата рождения,{{ card.patient.birth_date }}\n";
+    csv += "Адрес,{{ card.patient.address|default:'-' }}\n";
+    csv += "Телефон,{{ card.patient.phone|default:'-' }}\n";
+    csv += "Аллергии,{{ card.patient.allergies|default:'-' }}\n";
+    csv += ",,\n";
+    csv += "Зубная формула,,\n";
+    {% for tooth_num, tooth_data in card.tooth_formula.items %}
+    csv += "Зуб {{ tooth_num }},{{ tooth_data.status|default:'-' }}\n";
+    {% endfor %}
+    csv += ",,\n";
+    csv += "История лечения,,\n";
+    {% for visit in card.visits %}
+    csv += "Дата,{{ visit.datetime|date:'d.m.Y' }}\n";
+    csv += "Жалобы,{{ visit.complaints|default:'-' }}\n";
+    csv += "Диагноз,{{ visit.diagnosis|default:'-' }}\n";
+    csv += "Лечение,{{ visit.exam_results|default:'-' }}\n";
+    csv += "Рекомендации,{{ visit.notes|default:'-' }}\n";
+    csv += ",,\n";
+    {% endfor %}
+    
+    return csv;
+}
+</script>

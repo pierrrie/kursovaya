@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Визиты</h2>
+        <a href="/visits/create/" class="btn btn-success">Создать визит</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Пациент</th>
+                    <th>Врач</th>
+                    <th>Дата</th>
+                    <th>Время</th>
+                    <th>Жалобы</th>
+                    <th>Диагноз</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for visit in visits %}
+                <tr>
+                    <td>{{ visit.id }}</td>
+                    <td>{{ visit.patient_name }}</td>
+                    <td>{{ visit.doctor_name }}</td>
+                    <td>{{ visit.date }}</td>
+                    <td>{{ visit.time }}</td>
+                    <td>{{ visit.complaints|truncatewords:5 }}</td>
+                    <td>{{ visit.diagnosis|truncatewords:5 }}</td>
+                    <td>
+                        <a href="/visits/{{ visit.id }}/" class="btn btn-sm btn-primary">Просмотр</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+<parameter name="filePath">c:\Users\admin\Desktop\курсовая\mysite\frontend\templates\visits.html

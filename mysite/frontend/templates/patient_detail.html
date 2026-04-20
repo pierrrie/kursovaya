@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Детали пациента</h2>
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+{% if patient %}
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">{{ patient.full_name }}</h5>
+        <p class="card-text">
+            <strong>ID:</strong> {{ patient.id }}<br>
+            <strong>Дата рождения:</strong> {{ patient.birth_date }}<br>
+            <strong>Телефон:</strong> {{ patient.phone }}<br>
+            <strong>Адрес:</strong> {{ patient.address }}<br>
+            <strong>Аллергии:</strong> {{ patient.allergies }}<br>
+            <strong>Примечание:</strong> {{ patient.note }}
+        </p>
+    </div>
+</div>
+
+<a href="/patients/" class="btn btn-secondary mt-3">Назад к списку</a>
+<a href="/patients/{{ patient.id }}/edit/" class="btn btn-warning mt-3">Редактировать</a>
+{% endif %}
+
+{% endblock %}</content>
+<parameter name="filePath">c:\Users\admin\Desktop\курсовая\mysite\frontend\templates\patient_detail.html

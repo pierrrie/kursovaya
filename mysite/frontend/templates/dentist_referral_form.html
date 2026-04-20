@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>📄 Создать направление</h2>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Пациент</label>
+                <select name="patient_id" class="form-control" required>
+                    <option value="">-- Выберите пациента --</option>
+                    {% for patient in patients %}
+                    <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Связанный визит (опционально)</label>
+                <select name="visit_id" class="form-control">
+                    <option value="">-- Выберите визит --</option>
+                    {% for visit in visits %}
+                    <option value="{{ visit.id }}">{{ visit.patient_name }} - {{ visit.datetime|date:"d.m.Y H:i" }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Тип направления</label>
+                <select name="referral_type" class="form-control" required>
+                    <option value="research">На исследование</option>
+                    <option value="consultation">На консультацию</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Куда направить</label>
+                <input type="text" name="destination" class="form-control" 
+                       placeholder="Например: УЗИ кабинет, Хирург, Терапевт" required>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mb-3">
+        <label>Причина направления</label>
+        <textarea name="reason" class="form-control" rows="3" 
+                  placeholder="Опишите причину направления" required></textarea>
+    </div>
+    
+    <div class="mb-3">
+        <label>Дата направления</label>
+        <input type="date" name="date" class="form-control" 
+               value="{% now 'Y-m-d' %}" required>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Создать направление</button>
+    <a href="/dentist-documents/referrals/" class="btn btn-secondary">Отмена</a>
+</form>
+
+{% endblock %}

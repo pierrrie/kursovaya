@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Редактировать визит</h2>
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+{% if visit %}
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+        <label>Пациент (не может быть изменен)</label>
+        <input type="text" class="form-control" value="{{ visit.patient_name }}" disabled>
+    </div>
+    
+    <div class="mb-3">
+        <label>Дата и время визита</label>
+        <input type="datetime-local" name="datetime" class="form-control" value="{{ visit.datetime_local }}" required>
+    </div>
+    
+    <div class="mb-3">
+        <label>Жалобы и симптомы</label>
+        <textarea name="complaints" class="form-control">{{ visit.complaints|default:"" }}</textarea>
+    </div>
+    
+    <div class="mb-3">
+        <label>Анамнез</label>
+        <textarea name="anamnesis" class="form-control">{{ visit.anamnesis|default:"" }}</textarea>
+    </div>
+    
+    <div class="mb-3">
+        <label>Диагноз</label>
+        <textarea name="diagnosis" class="form-control">{{ visit.diagnosis|default:"" }}</textarea>
+    </div>
+    
+    <div class="mb-3">
+        <label>Результаты осмотра</label>
+        <textarea name="exam_results" class="form-control">{{ visit.exam_results|default:"" }}</textarea>
+    </div>
+    
+    <div class="mb-3">
+        <label>Примечания</label>
+        <textarea name="notes" class="form-control">{{ visit.notes|default:"" }}</textarea>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+    <a href="/dentist-diary/" class="btn btn-secondary">Отмена</a>
+</form>
+{% else %}
+<div class="alert alert-danger">Визит не найден</div>
+{% endif %}
+
+{% endblock %}

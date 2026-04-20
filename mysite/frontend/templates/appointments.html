@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Записи на прием</h2>
+        <a href="/appointments/create/" class="btn btn-success">Создать запись</a>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    {% if appointments %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Пациент</th>
+                    <th>Врач</th>
+                    <th>Дата</th>
+                    <th>Время</th>
+                    <th>Статус</th>
+                    <th>Комментарий</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in appointments %}
+                <tr>
+                    <td>{{ appointment.id }}</td>
+                    <td>{{ appointment.patient_name }}</td>
+                    <td>{{ appointment.doctor_name }}</td>
+                    <td>{{ appointment.date }}</td>
+                    <td>{{ appointment.time }}</td>
+                    <td>
+                        {% if appointment.status == "active" %}
+                        <span class="badge bg-success">Активна</span>
+                        {% elif appointment.status == "completed" %}
+                        <span class="badge bg-primary">Завершена</span>
+                        {% elif appointment.status == "cancelled" %}
+                        <span class="badge bg-danger">Отменена</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ appointment.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ appointment.comment|default:'—' }}</td>
+                    <td>
+                        <a href="/appointments/{{ appointment.id }}/" class="btn btn-sm btn-primary">Просмотр</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        Пока нет записей на прием. <a href="/appointments/create/" class="alert-link">Создайте первую запись</a>.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}<parameter name="filePath">c:\Users\admin\Desktop\курсовая\mysite\frontend\templates\appointments.html

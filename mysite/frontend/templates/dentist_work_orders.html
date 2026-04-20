@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>🔧 Наряды на выполнение работ</h2>
+
+<div class="mb-4">
+    <a href="/dentist-documents/work-orders/create/" class="btn btn-primary">➕ Создать наряд</a>
+    <a href="/dentist-diary/" class="btn btn-secondary">← Назад в дневник</a>
+</div>
+
+{% if works %}
+<div class="card">
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Пациент</th>
+                    <th>Описание работ</th>
+                    <th>Материалы</th>
+                    <th>Зубы</th>
+                    <th>Стоимость</th>
+                    <th>Статус</th>
+                    <th>Дата</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for work in works %}
+                <tr>
+                    <td>{{ work.patient_name|default:"—" }}</td>
+                    <td>{{ work.description|default:"—" }}</td>
+                    <td>{{ work.materials|default:"—" }}</td>
+                    <td>{{ work.tooth_numbers|default:"—" }}</td>
+                    <td>{% if work.cost %}{{ work.cost }} ₽{% else %}—{% endif %}</td>
+                    <td>
+                        {% if work.status == "planned" %}
+                        <span class="badge bg-warning">Запланировано</span>
+                        {% elif work.status == "in_progress" %}
+                        <span class="badge bg-info">В работе</span>
+                        {% elif work.status == "completed" %}
+                        <span class="badge bg-success">Выполнено</span>
+                        {% else %}
+                        <span class="badge bg-danger">Отменено</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ work.work_date|date:"d.m.Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    У вас пока нет созданных нарядов на работы.
+</div>
+{% endif %}
+
+{% endblock %}

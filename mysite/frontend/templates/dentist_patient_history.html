@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>📋 Выписка из медицинской карты</h2>
+
+{% if not generated %}
+<form method="post" class="mb-4">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Выберите пациента</label>
+                <select name="patient_id" class="form-control" required>
+                    <option value="">-- Выберите пациента --</option>
+                    {% for patient in patients %}
+                    <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Сформировать выписку</button>
+</form>
+{% else %}
+<div class="card">
+    <div class="card-header">
+        <h5>Выписка из медицинской карты</h5>
+        <div class="float-end">
+            <button onclick="window.print()" class="btn btn-sm btn-outline-primary">🖨️ Печать</button>
+            <button onclick="downloadWord()" class="btn btn-sm btn-outline-success">📄 Скачать Word</button>
+            <a href="/dentist-documents/patient-history/" class="btn btn-sm btn-outline-secondary">Новая выписка</a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if history %}
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <strong>Пациент:</strong> {{ history.patient.full_name }}
+            </div>
+            <div class="col-md-6">
+                <strong>Дата рождения:</strong> {{ history.patient.birth_date }}
+            </div>
+        </div>
+        
+        <h6>История визитов:</h6>
+        {% for visit in history.visits %}
+        <div class="border rounded p-3 mb-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Дата:</strong> {{ visit.datetime|date:"d.m.Y H:i" }}
+                </div>
+                <div class="col-md-9">
+                    <strong>Жалобы:</strong> {{ visit.complaints|default:"—" }}<br>
+                    <strong>Диагноз:</strong> {{ visit.diagnosis|default:"—" }}<br>
+                    <strong>Результаты осмотра:</strong> {{ visit.exam_results|default:"—" }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="alert alert-warning">Данные не найдены</div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="mt-3">
+    <a href="/dentist-diary/" class="btn btn-secondary">← Назад в дневник</a>
+</div>
+
+{% endblock %}
+
+<script>
+function downloadWord() {
+    // Скачиваем Word документ с сервера
+    const patientId = {{ history.patient.id }};
+    const url = `/api/documents/patient-history/${patientId}/word`;
+    
+    console.log('Downloading from URL:', url);
+    
+    // Используем fetch для скачивания файла
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            // Создаем URL для blob
+            const blobUrl = window.URL.createObjectURL(blob);
+            
+            // Создаем временную ссылку для скачивания
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `история_болезни_${patientId}.txt`;
+            link.style.display = 'none';
+            
+            // Добавляем ссылку на страницу и кликаем по ней
+            document.body.appendChild(link);
+            link.click();
+            
+            // Освобождаем URL и удаляем ссылку
+            setTimeout(() => {
+                window.URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(link);
+            }, 100);
+            
+            console.log('Download completed successfully');
+        })
+        .catch(error => {
+            console.error('Download failed:', error);
+            alert('Ошибка при скачивании файла: ' + error.message);
+        });
+}
+
+function exportToPDF() {
+    // Для простоты используем window.print() с CSS для печати
+    // В реальном приложении можно использовать html2pdf.js или серверную генерацию PDF
+    window.print();
+}
+</script>

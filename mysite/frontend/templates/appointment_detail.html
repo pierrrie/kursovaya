@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Детали записи</h2>
+        <a href="/appointments/" class="btn btn-secondary">Назад к списку</a>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    {% if appointment %}
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Запись #{{ appointment.id }}</h5>
+            <p class="card-text">
+                <strong>Пациент:</strong> {{ appointment.patient_name }}<br>
+                <strong>Врач:</strong> {{ appointment.doctor_name }}<br>
+                <strong>Дата:</strong> {{ appointment.date }}<br>
+                <strong>Время:</strong> {{ appointment.time }}<br>
+                <strong>Комментарий:</strong> {{ appointment.comment|default:'—' }}<br>
+                <strong>Статус:</strong>
+                <span class="badge bg-info">{{ appointment.status }}</span>
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+<parameter name="filePath">c:\Users\admin\Desktop\курсовая\mysite\frontend\templates\appointment_detail.html

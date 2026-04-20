@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{% if is_edit %}Редактировать{% else %}Создать{% endif %} пациента</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label>Фамилия</label>
+        <input type="text" name="last_name" class="form-control" value="{{ patient.last_name|default:'' }}" required>
+    </div>
+    <div class="mb-3">
+        <label>Имя</label>
+        <input type="text" name="first_name" class="form-control" value="{{ patient.first_name|default:'' }}" required>
+    </div>
+    <div class="mb-3">
+        <label>Отчество</label>
+        <input type="text" name="middle_name" class="form-control" value="{{ patient.middle_name|default:'' }}">
+    </div>
+    <div class="mb-3">
+        <label>Дата рождения</label>
+        <input type="date" name="birth_date" class="form-control" value="{{ patient.birth_date|default:'' }}">
+    </div>
+    <div class="mb-3">
+        <label>Телефон</label>
+        <input type="text" name="phone" class="form-control" value="{{ patient.phone|default:'' }}">
+    </div>
+    <div class="mb-3">
+        <label>Адрес</label>
+        <textarea name="address" class="form-control">{{ patient.address|default:'' }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label>Аллергии</label>
+        <textarea name="allergies" class="form-control">{{ patient.allergies|default:'' }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label>Примечание</label>
+        <textarea name="note" class="form-control">{{ patient.note|default:'' }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <a href="/patients/" class="btn btn-secondary">Отмена</a>
+</form>
+
+{% endblock %}</content>
+<parameter name="filePath">c:\Users\admin\Desktop\курсовая\mysite\frontend\templates\patient_form.html

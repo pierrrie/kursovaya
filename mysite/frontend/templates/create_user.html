@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Создать пользователя</h2>
+
+<div class="alert alert-info">
+    <strong>⚙️ Функция администратора:</strong> Только администраторы могут создавать новых пользователей системы.
+</div>
+
+<div class="card" style="max-width: 500px;">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label>Логин (email)</label>
+                <input type="email" name="username" class="form-control" required placeholder="admin@clinic.ru">
+            </div>
+            <div class="mb-3">
+                <label>Пароль</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label>Роль</label>
+                <select name="role" class="form-control" required>
+                    <option value="">-- Выберите роль --</option>
+                    <option value="administrator">Администратор</option>
+                    <option value="dentist">Стоматолог</option>
+                    <option value="manager">Менеджер</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Создать пользователя</button>
+            <a href="/" class="btn btn-secondary">Отмена</a>
+        </form>
+    </div>
+</div>
+
+<div class="mt-4">
+    <h4>Справка по ролям:</h4>
+    <ul>
+        <li><strong>↔️ Администратор</strong> - полный доступ ко всем функциям и возможность создавать пользователей</li>
+        <li><strong>🦷 Стоматолог</strong> - может создавать визиты, просматривать пациентов, работать с записями</li>
+        <li><strong>📋 Менеджер</strong> - может управлять записями, пациентами, визитами</li>
+    </ul>
+</div>
+
+{% endblock %}

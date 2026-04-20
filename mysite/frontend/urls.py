@@ -1,0 +1,29 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.home_view, name="home"),
+    path("settings/create-user/", views.admin_create_user_view, name="admin_create_user"),
+    path("login/", views.login_view, name="login"),
+    path("register/", views.register_view, name="register"),
+    path("logout/", views.logout_view, name="logout"),
+    path("patients/", views.patients_view, name="patients"),
+    path("patients/<int:patient_id>/", views.patient_detail_view, name="patient_detail"),
+    path("patients/<int:patient_id>/edit/", views.patient_edit_view, name="patient_edit"),
+    path("patients/create/", views.patient_create_view, name="patient_create"),
+    path("visits/", views.visits_view, name="visits"),
+    path("visits/create/", views.visit_create_view, name="visit_create"),
+    path("visits/<int:visit_id>/", views.visit_detail_view, name="visit_detail"),
+    path("visits/<int:visit_id>/edit/", views.visit_edit_view, name="visit_edit"),
+    path("appointments/", views.appointments_view, name="appointments"),
+    path("appointments/create/", views.appointment_create_view, name="appointment_create"),
+    path("appointments/<int:appointment_id>/", views.appointment_detail_view, name="appointment_detail"),
+    path("appointments/<int:appointment_id>/edit/", views.appointment_edit_view, name="appointment_edit"),
+    path("dentist-diary/", views.dentist_diary_view, name="dentist_diary"),
+    path("dentist-documents/referrals/", views.dentist_referrals_view, name="dentist_referrals"),
+    path("dentist-documents/referrals/create/", views.dentist_referral_create_view, name="dentist_referral_create"),
+    path("dentist-documents/patient-history/", views.dentist_patient_history_view, name="dentist_patient_history"),
+    path("dentist-documents/medical-card/", views.dentist_medical_card_view, name="dentist_medical_card"),
+    path("dentist-documents/work-orders/", views.dentist_work_orders_view, name="dentist_work_orders"),
+    path("dentist-documents/work-orders/create/", views.dentist_work_create_view, name="dentist_work_create"),
+]

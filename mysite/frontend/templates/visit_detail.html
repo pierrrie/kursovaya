@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Детали визита</h2>
+        <a href="/visits/" class="btn btn-secondary">Назад к списку</a>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    {% if visit %}
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Визит #{{ visit.id }}</h5>
+            <p class="card-text">
+                <strong>Пациент:</strong> {{ visit.patient_name }}<br>
+                <strong>Врач:</strong> {{ visit.doctor_name }}<br>
+                <strong>Дата:</strong> {{ visit.date }}<br>
+                <strong>Время:</strong> {{ visit.time }}<br>
+                <strong>Жалобы:</strong> {{ visit.complaints }}<br>
+                <strong>Анамнез:</strong> {{ visit.anamnesis }}<br>
+                <strong>Диагноз:</strong> {{ visit.diagnosis }}<br>
+                <strong>Результаты осмотра:</strong> {{ visit.exam_results }}<br>
+                <strong>Примечания:</strong> {{ visit.notes|default:'—' }}
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+<parameter name="filePath">c:\Users\admin\Desktop\курсовая\mysite\frontend\templates\visit_detail.html

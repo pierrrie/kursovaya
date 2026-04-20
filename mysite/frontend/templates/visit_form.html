@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Создать визит</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label>Пациент</label>
+        <select name="patient_id" class="form-control" required>
+            <option value="">-- Выберите пациента --</option>
+            {% for patient in patients %}
+            <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Дата и время визита</label>
+        <input type="datetime-local" name="datetime" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Жалобы и симптомы</label>
+        <textarea name="complaints" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label>Анамнез</label>
+        <textarea name="anamnesis" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label>Диагноз</label>
+        <textarea name="diagnosis" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label>Результаты осмотра</label>
+        <textarea name="exam_results" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label>Примечания</label>
+        <textarea name="notes" class="form-control"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Создать визит</button>
+    <a href="/visits/" class="btn btn-secondary">Отмена</a>
+</form>
+
+{% endblock %}

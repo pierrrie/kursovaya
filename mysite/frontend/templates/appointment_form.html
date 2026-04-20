@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Создать запись на прием</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="patient_id" class="form-label">Пациент <span class="text-danger">*</span></label>
+                    <select name="patient_id" id="patient_id" class="form-control" required onchange="validateForm()">
+                        <option value="">-- Выберите пациента --</option>
+                        {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="doctor_id" class="form-label">Врач <span class="text-danger">*</span></label>
+                    <select name="doctor_id" id="doctor_id" class="form-control" required onchange="validateForm()">
+                        <option value="">-- Выберите врача --</option>
+                        {% for doctor in doctors %}
+                        <option value="{{ doctor.id }}">{{ doctor.username }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">Врач обязателен для создания записи</small>
+                </div>
+                <div class="mb-3">
+                    <label for="datetime" class="form-label">Дата и время приема <span class="text-danger">*</span></label>
+                    <input type="datetime-local" name="datetime" id="datetime" class="form-control" required>
+                    <small class="form-text text-muted">Укажите дату и время в формате YYYY-MM-DD HH:MM</small>
+                </div>
+                <div class="mb-3">
+                    <label for="reason" class="form-label">Причина приема / Комментарий</label>
+                    <textarea name="reason" id="reason" class="form-control" rows="4"></textarea>
+                </div>
+                <div class="btn-group" role="group">
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Создать запись</button>
+                    <a href="/appointments/" class="btn btn-secondary">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function validateForm() {
+    const patientId = document.getElementById('patient_id').value.trim();
+    const doctorId = document.getElementById('doctor_id').value.trim();
+    const datetime = document.getElementById('datetime').value.trim();
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Кнопка активна только если все обязательные поля заполнены
+    if (patientId && doctorId && datetime) {
+        submitBtn.disabled = false;
+    } else {
+        submitBtn.disabled = true;
+    }
+}
+
+// Проверяем при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    validateForm();
+    document.getElementById('datetime').addEventListener('change', validateForm);
+});
+
+// Дополнительная проверка перед отправкой формы
+document.querySelector('form').addEventListener('submit', function(e) {
+    const patientId = document.getElementById('patient_id').value.trim();
+    const doctorId = document.getElementById('doctor_id').value.trim();
+    const datetime = document.getElementById('datetime').value.trim();
+    
+    if (!patientId) {
+        e.preventDefault();
+        alert('Пожалуйста, выберите пациента');
+        return false;
+    }
+    if (!doctorId) {
+        e.preventDefault();
+        alert('Пожалуйста, выберите врача');
+        return false;
+    }
+    if (!datetime) {
+        e.preventDefault();
+        alert('Пожалуйста, укажите дату и время приема');
+        return false;
+    }
+});
+</script>
+{% endblock %}
