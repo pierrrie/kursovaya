@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 import requests
 import json
+from pathlib import Path
 
 API_URL = "http://127.0.0.8:8000"  # FastAPI сервер
 
@@ -203,14 +204,30 @@ def patients_view(request):
         return redirect("/login/")
     
     headers = {"Authorization": f"Bearer {token}"}
-    resp = requests.get(f"{API_URL}/patients/", headers=headers)
+    visit_date = (request.GET.get("visit_date") or "").strip()
+    if visit_date:
+        resp = requests.get(
+            f"{API_URL}/patients/by-visit-date/",
+            headers=headers,
+            params={"visit_date": visit_date},
+        )
+    else:
+        resp = requests.get(f"{API_URL}/patients/", headers=headers)
     if resp.status_code == 200:
         patients = resp.json()
     else:
         patients = []
         error = resp.json().get("detail", "Ошибка загрузки пациентов")
     
-    return render(request, "patients.html", {"patients": patients, "error": error if 'error' in locals() else None})
+    return render(
+        request,
+        "patients.html",
+        {
+            "patients": patients,
+            "selected_visit_date": visit_date,
+            "error": error if 'error' in locals() else None,
+        },
+    )
 
 
 def patient_detail_view(request, patient_id):
@@ -325,20 +342,61 @@ def patient_create_view(request):
     return render(request, "patient_form.html")
 
 
+def patient_delete_view(request, patient_id):
+    token = request.session.get("token")
+    role = request.session.get("role")
+    if not token:
+        return redirect("/login/")
+
+    if role not in ["manager", "administrator"]:
+        messages.error(request, "Только менеджер или администратор может удалять пациентов")
+        return redirect("/patients/")
+
+    if request.method != "POST":
+        return redirect("/patients/")
+
+    headers = {"Authorization": f"Bearer {token}"}
+    resp = requests.delete(f"{API_URL}/patients/{patient_id}", headers=headers)
+    if resp.status_code in [200, 202, 204]:
+        messages.success(request, "Пациент удален")
+    elif resp.status_code == 404:
+        messages.error(request, "Пациент не найден")
+    else:
+        messages.error(request, f"Ошибка удаления пациента: {resp.status_code}")
+    return redirect("/patients/")
+
+
 def visits_view(request):
     token = request.session.get("token")
     if not token:
         return redirect("/login/")
     
     headers = {"Authorization": f"Bearer {token}"}
-    resp = requests.get(f"{API_URL}/visits/", headers=headers)
+    date_from = (request.GET.get("date_from") or "").strip()
+    date_to = (request.GET.get("date_to") or "").strip()
+    params = {}
+    if date_from:
+        params["date_from"] = date_from
+    if date_to:
+        params["date_to"] = date_to
+
+    resp = requests.get(f"{API_URL}/visits/", headers=headers, params=params if params else None)
     if resp.status_code == 200:
         visits = [enrich_visit(v, headers) for v in resp.json()]
     else:
         visits = []
         error = resp.json().get("detail", "Ошибка загрузки визитов")
     
-    return render(request, "visits.html", {"visits": visits, "error": error if 'error' in locals() else None})
+    return render(
+        request,
+        "visits.html",
+        {
+            "visits": visits,
+            "selected_date_from": date_from,
+            "selected_date_to": date_to,
+            "error": error if 'error' in locals() else None,
+        },
+    )
 
 
 def visit_detail_view(request, visit_id):
@@ -934,37 +992,21 @@ def download_patient_history_word(request, patient_id):
         return HttpResponse("Необходима авторизация", status=401)
     
     headers = {"Authorization": f"Bearer {token}"}
-    
-    # Получаем данные пациента
-    resp = requests.get(f"{API_URL}/patients/{patient_id}", headers=headers)
+    resp = requests.get(
+        f"{API_URL}/documents/patient-history/{patient_id}/word",
+        headers=headers,
+    )
     if resp.status_code != 200:
         from django.http import HttpResponse
-        return HttpResponse(f"Ошибка получения данных пациента: {resp.status_code}", status=500)
-    
-    patient = resp.json()
-    
-    # Создаем простой текстовый файл для тестирования
-    from datetime import datetime
-    content = f"""История болезни пациента {patient.get('full_name', '')}
+        return HttpResponse(f"Ошибка генерации документа: {resp.status_code}", status=resp.status_code)
 
-Основная информация:
-ФИО: {patient.get('full_name', '')}
-Дата рождения: {patient.get('birth_date', '')}
-Адрес: {patient.get('address', '')}
-Телефон: {patient.get('phone', '')}
-Полис ОМС: {patient.get('oms_policy', '')}
-
-Тестовый документ создан {datetime.now().strftime('%d.%m.%Y %H:%M')}
-"""
-    
-    # Возвращаем файл для скачивания
     from django.http import HttpResponse
-    response = HttpResponse(content, content_type='text/plain; charset=utf-8')
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    response['Content-Length'] = len(content.encode('utf-8'))
-    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response['Pragma'] = 'no-cache'
-    response['Expires'] = '0'
+    response = HttpResponse(
+        resp.content,
+        content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
+    # ASCII-имя файла для совместимости с Django и браузерами.
+    response['Content-Disposition'] = 'attachment; filename="patient_history.docx"'
     return response
 
 
@@ -976,76 +1018,202 @@ def download_medical_card_word(request, patient_id):
         return redirect("/login/")
     
     headers = {"Authorization": f"Bearer {token}"}
-    
-    # Получаем данные пациента
-    resp = requests.get(f"{API_URL}/patients/{patient_id}", headers=headers)
+
+    resp = requests.get(
+        f"{API_URL}/documents/medical-card/{patient_id}/word",
+        headers=headers,
+    )
     if resp.status_code != 200:
-        messages.error(request, "Ошибка получения данных пациента")
+        messages.error(request, "Ошибка генерации медицинской карты")
         return redirect(f"/patients/{patient_id}/")
-    
-    patient = resp.json()
-    
-    # Получаем визиты пациента
-    resp = requests.get(f"{API_URL}/visits/?patient_id={patient_id}", headers=headers)
-    visits = [] if resp.status_code != 200 else resp.json()
-    
-    # Создаем Word документ
-    from docx import Document
-    from docx.shared import Inches
-    from io import BytesIO
-    
-    doc = Document()
-    doc.add_heading('МЕДИЦИНСКАЯ КАРТА СТОМАТОЛОГИЧЕСКОГО ПАЦИЕНТА', 0)
-    doc.add_heading('Форма 043/у', level=1)
-    
-    # Основная информация о пациенте
-    doc.add_heading('1. ОБЩИЕ СВЕДЕНИЯ О ПАЦИЕНТЕ', level=1)
-    doc.add_paragraph(f'ФИО: {patient.get("full_name", "")}')
-    doc.add_paragraph(f'Дата рождения: {patient.get("birth_date", "")}')
-    doc.add_paragraph(f'Адрес: {patient.get("address", "")}')
-    doc.add_paragraph(f'Телефон: {patient.get("phone", "")}')
-    doc.add_paragraph(f'Полис ОМС: {patient.get("oms_policy", "")}')
-    
-    # Стоматологический статус
-    doc.add_heading('2. СТОМАТОЛОГИЧЕСКИЙ СТАТУС', level=1)
-    
-    # Визиты
-    if visits:
-        doc.add_heading('История посещений', level=2)
-        for visit in visits:
-            doc.add_paragraph(f'Дата визита: {visit.get("datetime", "")}')
-            doc.add_paragraph(f'Жалобы: {visit.get("complaints", "")}')
-            doc.add_paragraph(f'Диагноз: {visit.get("diagnosis", "")}')
-            doc.add_paragraph(f'Проведенные манипуляции: {visit.get("exam_results", "")}')
-            doc.add_paragraph('')
-    
-    # Зубная формула (простая версия)
-    doc.add_heading('3. ЗУБНАЯ ФОРМУЛА', level=1)
-    doc.add_paragraph('Зубная формула будет заполнена на основе проведенных осмотров и лечения.')
-    
-    # Лечение
-    doc.add_heading('4. ПРОВЕДЕННОЕ ЛЕЧЕНИЕ', level=1)
-    if visits:
-        for visit in visits:
-            if visit.get("exam_results"):
-                doc.add_paragraph(f'Дата: {visit.get("datetime", "")} - {visit.get("exam_results", "")}')
-    
-    # Рекомендации
-    doc.add_heading('5. РЕКОМЕНДАЦИИ', level=1)
-    doc.add_paragraph('Рекомендуется регулярные осмотры стоматолога каждые 6 месяцев.')
-    doc.add_paragraph('Необходимо соблюдать гигиену полости рта.')
-    
-    # Сохраняем документ в память
-    buffer = BytesIO()
-    doc.save(buffer)
-    buffer.seek(0)
-    
-    # Возвращаем файл для скачивания
+
     from django.http import HttpResponse
     response = HttpResponse(
-        buffer.getvalue(),
+        resp.content,
         content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
-    filename = f"медицинская_карта_{patient.get('full_name', 'пациент').replace(' ', '_')}.docx"
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    response['Content-Disposition'] = 'attachment; filename="medical_card_043u.docx"'
     return response
+
+
+def download_medical_card_excel(request, patient_id):
+    """Скачивание медицинской карты пациента (форма 043/у) в формате XLSX"""
+    token = request.session.get("token")
+    if not token:
+        messages.error(request, "Необходима авторизация")
+        return redirect("/login/")
+
+    headers = {"Authorization": f"Bearer {token}"}
+    resp = requests.get(
+        f"{API_URL}/documents/patient-history/{patient_id}",
+        headers=headers,
+    )
+    if resp.status_code != 200:
+        messages.error(request, "Ошибка генерации Excel-файла")
+        return redirect(f"/patients/{patient_id}/")
+
+    card = resp.json()
+
+    from django.http import HttpResponse
+    from openpyxl import Workbook
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Медицинская карта"
+
+    patient = card.get("patient", {})
+    sheet.append(["Поле", "Значение"])
+    sheet.append(["ФИО", patient.get("full_name", "")])
+    sheet.append(["Дата рождения", patient.get("birth_date", "")])
+    sheet.append(["Телефон", patient.get("phone", "")])
+    sheet.append(["Адрес", patient.get("address", "")])
+    sheet.append(["Аллергии", patient.get("allergies", "")])
+    sheet.append([])
+
+    sheet.append(["Зуб", "Статус", "Примечания"])
+    tooth_formula = card.get("tooth_formula", {})
+    for tooth_num, tooth_data in tooth_formula.items():
+        sheet.append([
+            tooth_num,
+            tooth_data.get("status", ""),
+            tooth_data.get("notes", ""),
+        ])
+    sheet.append([])
+
+    sheet.append(["Дата визита", "Жалобы", "Диагноз", "Лечение", "Рекомендации"])
+    for visit in card.get("visits", []):
+        sheet.append([
+            visit.get("datetime", ""),
+            visit.get("complaints", ""),
+            visit.get("diagnosis", ""),
+            visit.get("exam_results", ""),
+            visit.get("notes", ""),
+        ])
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = 'attachment; filename="medical_card_043u.xlsx"'
+    workbook.save(response)
+    return response
+
+
+def mkb_s3_admin_view(request):
+    """Админ-страница обновления справочника МКБ-С-3 и загрузки DLL."""
+    token = request.session.get("token")
+    role = request.session.get("role")
+    if not token:
+        return redirect("/login/")
+    if role != "administrator":
+        messages.error(request, "Доступ только для администратора")
+        return redirect("/")
+
+    headers = {"Authorization": f"Bearer {token}"}
+    metadata = {}
+    services_count = None
+    data_path = (
+        Path(__file__).resolve().parents[2]
+        / "fastapi_app"
+        / "app"
+        / "data"
+        / "mkb_s3_codes.json"
+    )
+    dll_path = (
+        Path(__file__).resolve().parents[2]
+        / "fastapi_app"
+        / "app"
+        / "dll"
+        / "mkb_s3.dll"
+    )
+
+    def refresh_state():
+        nonlocal metadata, services_count
+        try:
+            payload = json.loads(data_path.read_text(encoding="utf-8"))
+        except Exception:
+            payload = {}
+
+        services = payload.get("services", [])
+        services_count = len(services)
+
+        dll_loaded = False
+        if dll_path.exists():
+            try:
+                import ctypes
+                ctypes.WinDLL(str(dll_path))
+                dll_loaded = True
+            except Exception:
+                dll_loaded = False
+
+        metadata = {
+            "version": payload.get("version", "unknown"),
+            "updated_at": payload.get("updated_at", ""),
+            "source": "dll+json" if dll_loaded else "json",
+            "dll_loaded": "yes" if dll_loaded else "no",
+        }
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "reload":
+            # Локальный reload без API: проверяем, что JSON читается и DLL загружается.
+            try:
+                _ = json.loads(data_path.read_text(encoding="utf-8"))
+                if dll_path.exists():
+                    import ctypes
+                    ctypes.WinDLL(str(dll_path))
+                messages.success(request, "Справочник перезагружен (локальная проверка)")
+            except Exception as exc:
+                messages.error(request, f"Ошибка reload: {exc}")
+
+        elif action == "upload_json":
+            json_file = request.FILES.get("json_file")
+            json_text = request.POST.get("json_text", "").strip()
+            payload = None
+
+            try:
+                if json_file:
+                    payload = json.loads(json_file.read().decode("utf-8"))
+                elif json_text:
+                    payload = json.loads(json_text)
+            except Exception as exc:
+                messages.error(request, f"Некорректный JSON: {exc}")
+
+            if payload:
+                try:
+                    data_path.parent.mkdir(parents=True, exist_ok=True)
+                    data_path.write_text(
+                        json.dumps(payload, ensure_ascii=False, indent=2),
+                        encoding="utf-8",
+                    )
+                    messages.success(request, "Справочник обновлен из JSON")
+                except Exception as exc:
+                    messages.error(request, f"Ошибка update: {exc}")
+
+        elif action == "upload_dll":
+            dll_file = request.FILES.get("dll_file")
+            if not dll_file:
+                messages.error(request, "Выберите файл DLL")
+            else:
+                try:
+                    target = (
+                        Path(__file__).resolve().parents[2]
+                        / "fastapi_app"
+                        / "app"
+                        / "dll"
+                        / "mkb_s3.dll"
+                    )
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(dll_file.read())
+                    import ctypes
+                    ctypes.WinDLL(str(target))
+                    messages.success(request, "DLL загружена и подключена")
+                except Exception as exc:
+                    messages.error(request, f"Ошибка сохранения DLL: {exc}")
+
+    refresh_state()
+    return render(
+        request,
+        "mkb_s3_admin.html",
+        {"metadata": metadata, "services_count": services_count},
+    )

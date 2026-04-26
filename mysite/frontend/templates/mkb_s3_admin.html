@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Управление МКБ-С-3</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5>Текущее состояние</h5>
+        <p class="mb-1"><strong>Источник:</strong> {{ metadata.source|default:"unknown" }}</p>
+        <p class="mb-1"><strong>Версия:</strong> {{ metadata.version|default:"unknown" }}</p>
+        <p class="mb-1"><strong>Обновлено:</strong> {{ metadata.updated_at|default:"—" }}</p>
+        <p class="mb-0"><strong>Кол-во кодов:</strong> {{ services_count|default:"—" }}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header">Обновить JSON-справочник</div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="upload_json">
+                    <div class="mb-3">
+                        <label class="form-label">JSON-файл</label>
+                        <input class="form-control" type="file" name="json_file" accept=".json">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">или JSON-текст</label>
+                        <textarea class="form-control" name="json_text" rows="6" placeholder='{"version":"...","updated_at":"...","services":[...]}'></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Обновить справочник</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header">Загрузить DLL</div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="upload_dll">
+                    <div class="mb-3">
+                        <label class="form-label">Файл `mkb_s3.dll`</label>
+                        <input class="form-control" type="file" name="dll_file" accept=".dll">
+                    </div>
+                    <button type="submit" class="btn btn-warning">Загрузить DLL</button>
+                </form>
+                <hr>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reload">
+                    <button type="submit" class="btn btn-outline-secondary">Перезагрузить источник</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

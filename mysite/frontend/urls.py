@@ -10,6 +10,7 @@ urlpatterns = [
     path("patients/", views.patients_view, name="patients"),
     path("patients/<int:patient_id>/", views.patient_detail_view, name="patient_detail"),
     path("patients/<int:patient_id>/edit/", views.patient_edit_view, name="patient_edit"),
+    path("patients/<int:patient_id>/delete/", views.patient_delete_view, name="patient_delete"),
     path("patients/create/", views.patient_create_view, name="patient_create"),
     path("visits/", views.visits_view, name="visits"),
     path("visits/create/", views.visit_create_view, name="visit_create"),
@@ -26,4 +27,5 @@ urlpatterns = [
     path("dentist-documents/medical-card/", views.dentist_medical_card_view, name="dentist_medical_card"),
     path("dentist-documents/work-orders/", views.dentist_work_orders_view, name="dentist_work_orders"),
     path("dentist-documents/work-orders/create/", views.dentist_work_create_view, name="dentist_work_create"),
+    path("settings/mkb-s3/", views.mkb_s3_admin_view, name="mkb_s3_admin"),
 ]

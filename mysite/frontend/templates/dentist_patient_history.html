@@ -27,7 +27,7 @@
         <h5>Выписка из медицинской карты</h5>
         <div class="float-end">
             <button onclick="window.print()" class="btn btn-sm btn-outline-primary">🖨️ Печать</button>
-            <button onclick="downloadWord()" class="btn btn-sm btn-outline-success">📄 Скачать Word</button>
+            <a href="/api/documents/patient-history/{{ history.patient.id }}/word" class="btn btn-sm btn-outline-success">📄 Скачать Word</a>
             <a href="/dentist-documents/patient-history/" class="btn btn-sm btn-outline-secondary">Новая выписка</a>
         </div>
     </div>
@@ -71,48 +71,6 @@
 {% endblock %}
 
 <script>
-function downloadWord() {
-    // Скачиваем Word документ с сервера
-    const patientId = {{ history.patient.id }};
-    const url = `/api/documents/patient-history/${patientId}/word`;
-    
-    console.log('Downloading from URL:', url);
-    
-    // Используем fetch для скачивания файла
-    fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.blob();
-        })
-        .then(blob => {
-            // Создаем URL для blob
-            const blobUrl = window.URL.createObjectURL(blob);
-            
-            // Создаем временную ссылку для скачивания
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = `история_болезни_${patientId}.txt`;
-            link.style.display = 'none';
-            
-            // Добавляем ссылку на страницу и кликаем по ней
-            document.body.appendChild(link);
-            link.click();
-            
-            // Освобождаем URL и удаляем ссылку
-            setTimeout(() => {
-                window.URL.revokeObjectURL(blobUrl);
-                document.body.removeChild(link);
-            }, 100);
-            
-            console.log('Download completed successfully');
-        })
-        .catch(error => {
-            console.error('Download failed:', error);
-            alert('Ошибка при скачивании файла: ' + error.message);
-        });
-}
 
 function exportToPDF() {
     // Для простоты используем window.print() с CSS для печати

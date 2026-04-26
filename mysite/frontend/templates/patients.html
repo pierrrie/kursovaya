@@ -3,6 +3,17 @@
 {% block content %}
 <h2>Пациенты</h2>
 
+<form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-md-4">
+        <label for="visit_date" class="form-label">Поиск по дате посещения</label>
+        <input type="date" id="visit_date" name="visit_date" class="form-control" value="{{ selected_visit_date }}">
+    </div>
+    <div class="col-md-8">
+        <button type="submit" class="btn btn-primary">Найти пациентов</button>
+        <a href="/patients/" class="btn btn-outline-secondary">Сброс</a>
+    </div>
+</form>
+
 <table class="table table-striped">
     <thead>
         <tr>
@@ -24,6 +35,18 @@
             <td>{{ patient.address }}</td>
             <td>
                 <a href="/patients/{{ patient.id }}/" class="btn btn-sm btn-primary">Просмотр</a>
+                {% if request.session.role == "manager" or request.session.role == "administrator" %}
+                <form method="post" action="/patients/{{ patient.id }}/delete/" style="display:inline;">
+                    {% csrf_token %}
+                    <button
+                        type="submit"
+                        class="btn btn-sm btn-danger"
+                        onclick="return confirm('Удалить пациента?')"
+                    >
+                        Удалить
+                    </button>
+                </form>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}
@@ -32,5 +55,4 @@
 
 <a href="/patients/create/" class="btn btn-success">Добавить пациента</a>
 
-{% endblock %}</content>
-<parameter name="filePath">c:\Users\admin\Desktop\курсовая\mysite\frontend\templates\patients.html
+{% endblock %}

@@ -1,6 +1,6 @@
 # app/api/mkb_s3_api.py
 from fastapi import APIRouter, HTTPException
-from typing import List
+from typing import Dict
 from app.mkb_s3 import mkb_s3
 
 router = APIRouter()
@@ -30,3 +30,36 @@ async def search_services(query: str):
 async def suggest_services_by_diagnosis(diagnosis: str):
     """Подобрать услуги на основе диагноза"""
     return mkb_s3.suggest_services(diagnosis)
+
+
+@router.get("/metadata")
+async def get_mkb_s3_metadata() -> Dict[str, str]:
+    """Получить метаданные загруженного справочника"""
+    return mkb_s3.get_metadata()
+
+
+@router.post("/reload")
+async def reload_mkb_s3_data():
+    """Перечитать справочник из файла/доступной DLL"""
+    try:
+        mkb_s3.reload()
+        return {"status": "ok", "metadata": mkb_s3.get_metadata()}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Ошибка reload: {exc}") from exc
+
+
+@router.post("/update")
+async def update_mkb_s3_data(payload: Dict):
+    """
+    Обновить справочник из JSON payload.
+    Ожидается структура:
+    {
+      "version": "...",
+      "updated_at": "...",
+      "services": [ ... ]
+    }
+    """
+    if "services" not in payload or not isinstance(payload["services"], list):
+        raise HTTPException(status_code=400, detail="Поле 'services' должно быть списком")
+    meta = mkb_s3.update_from_payload(payload)
+    return {"status": "ok", "metadata": meta}

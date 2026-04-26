@@ -27,8 +27,8 @@
         <h5>Медицинская карта стоматологического больного</h5>
         <div class="float-end">
             <button onclick="window.print()" class="btn btn-sm btn-outline-primary">🖨️ Печать</button>
-            <button onclick="downloadWord()" class="btn btn-sm btn-outline-success">📄 Скачать Word</button>
-            <button onclick="downloadExcel()" class="btn btn-sm btn-outline-info">📊 Скачать Excel</button>
+            <a href="/api/documents/medical-card/{{ card.patient.id }}/word" class="btn btn-sm btn-outline-success">📄 Скачать Word</a>
+            <a href="/api/documents/medical-card/{{ card.patient.id }}/excel" class="btn btn-sm btn-outline-info">📊 Скачать Excel</a>
             <a href="/dentist-documents/medical-card/" class="btn btn-sm btn-outline-secondary">Новая карта</a>
         </div>
     </div>
@@ -86,11 +86,6 @@
 {% endblock %}
 
 <script>
-function downloadWord() {
-    // Скачиваем Word документ с сервера
-    const patientId = {{ card.patient.id }};
-    window.location.href = `/api/documents/medical-card/${patientId}/word`;
-}
 
 function downloadExcel() {
     // Создаем CSV файл для имитации Excel

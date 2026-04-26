@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from typing import Dict, Any
 from datetime import datetime
 import json
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from io import BytesIO
 from docx import Document
 from docx.shared import Inches
@@ -206,11 +206,9 @@ async def download_patient_history_word(
     buffer.seek(0)
     
     # Возвращаем файл
-    filename = f"выписка_{patient.full_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.docx"
-    return StreamingResponse(
-        buffer,
-        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{filename}"}
+    return Response(
+        content=buffer.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
 
 @router.get("/medical-card/{patient_id}/word")
@@ -293,7 +291,8 @@ async def download_medical_card_word(
             row_cells[0].text = str(tooth.number)
             row_cells[1].text = tooth.status or "—"
             row_cells[2].text = tooth.notes or "—"
-            row_cells[3].text = tooth.updated_at.strftime("%d.%m.%Y") if tooth.updated_at else "—"
+            updated_at = getattr(tooth, "updated_at", None)
+            row_cells[3].text = updated_at.strftime("%d.%m.%Y") if updated_at else "—"
     else:
         doc.add_paragraph('Зубная формула не заполнена')
     
@@ -330,11 +329,9 @@ async def download_medical_card_word(
     buffer.seek(0)
     
     # Возвращаем файл
-    filename = f"карта_043у_{patient.full_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.docx"
-    return StreamingResponse(
-        buffer,
-        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{filename}"}
+    return Response(
+        content=buffer.getvalue(),
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
 
 @router.get("/visit-report/{visit_id}")
