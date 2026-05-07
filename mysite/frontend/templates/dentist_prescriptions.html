@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>💊 Назначения пациентам</h2>
+
+<div class="mb-4">
+    <a href="/dentist-documents/prescriptions/create/" class="btn btn-primary">➕ Добавить назначение</a>
+    <a href="/dentist-diary/" class="btn btn-secondary">← Назад в дневник</a>
+</div>
+
+{% if prescriptions %}
+<div class="card">
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Пациент</th>
+                    <th>Препарат</th>
+                    <th>Дозировка</th>
+                    <th>Инструкция</th>
+                    <th>Период</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in prescriptions %}
+                <tr>
+                    <td>{{ item.patient_name }}</td>
+                    <td>{{ item.medication }}</td>
+                    <td>{{ item.dosage }}</td>
+                    <td>{{ item.instructions|default:"—" }}</td>
+                    <td>{{ item.start_date }}{% if item.end_date %} — {{ item.end_date }}{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    Назначений пока нет. Добавьте первое назначение.
+</div>
+{% endif %}
+{% endblock %}

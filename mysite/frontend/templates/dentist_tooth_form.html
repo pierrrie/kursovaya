@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>🦷 Добавить запись в зубную формулу</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Пациент</label>
+                <select name="patient_id" class="form-control" required>
+                    <option value="">-- Выберите пациента --</option>
+                    {% for patient in patients %}
+                    <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label>Номер зуба</label>
+                <input type="number" name="number" class="form-control" min="1" max="48" required>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label>Статус</label>
+                <input type="text" name="status" class="form-control" placeholder="кариес/здоров/пломба" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Примечание</label>
+        <textarea name="notes" class="form-control" rows="3"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <a href="/dentist-documents/teeth/" class="btn btn-secondary">Отмена</a>
+</form>
+{% endblock %}

@@ -32,6 +32,110 @@ from app.auth.security import get_password_hash
 
 fake = Faker('ru_RU')  # Русские данные
 
+ALLERGIES = [
+    "Нет",
+    "Пенициллины",
+    "Лидокаин",
+    "Артикаин",
+    "НПВС (ибупрофен)",
+    "Латекс",
+    "Йодсодержащие препараты",
+]
+
+PATIENT_NOTES = [
+    "Тревожный пациент, требуется подробное объяснение этапов лечения.",
+    "Рекомендуется запись на первую половину дня.",
+    "Перенесена профессиональная гигиена, контроль через 6 месяцев.",
+    "Наблюдение у терапевта по поводу АГ.",
+    "Предпочитает СМС-напоминания о приеме.",
+]
+
+APPOINTMENT_COMMENTS = [
+    "Первичный прием.",
+    "Повторный осмотр после лечения.",
+    "Контрольный визит после эндодонтического лечения.",
+    "Консультация по протезированию.",
+    "Профилактический осмотр.",
+]
+
+COMPLAINTS = [
+    "Боль при накусывании в области 3.6.",
+    "Кратковременная реакция на холодное в области 1.4.",
+    "Ноющая боль в ночное время в области 2.6.",
+    "Кровоточивость десен при чистке зубов.",
+    "Дискомфорт после установки пломбы.",
+]
+
+ANAMNESIS = [
+    "Жалобы появились 3 дня назад, самостоятельно принимал ибупрофен.",
+    "Ранее проводилось лечение кариеса в данной области около года назад.",
+    "Хронические заболевания: артериальная гипертензия, сахарный диабет 2 типа.",
+    "Аллергологический анамнез отягощен, требуется проба на анестетик.",
+    "Профилактические осмотры нерегулярные, последний визит более 2 лет назад.",
+]
+
+DIAGNOSES = [
+    "Кариес дентина 3.6",
+    "Хронический пульпит 2.6",
+    "Клиновидный дефект 1.4",
+    "Генерализованный гингивит легкой степени",
+    "Периодонтит 4.6",
+]
+
+EXAM_RESULTS = [
+    "Перкуссия слабо положительная, слизистая без выраженной гиперемии.",
+    "Кариозная полость средней глубины, зондирование болезненно.",
+    "Патологическая подвижность отсутствует, прикус без особенностей.",
+    "Отек мягких тканей не выявлен, регионарные лимфоузлы не увеличены.",
+    "Реакция на холодовой тест кратковременная.",
+]
+
+VISIT_NOTES = [
+    "Пациенту выданы рекомендации по гигиене полости рта.",
+    "Назначен контрольный визит через 7 дней.",
+    "Проведена инфильтрационная анестезия без осложнений.",
+    "Рекомендовано ограничить твердую пищу на 24 часа.",
+    "Согласован план дальнейшего лечения.",
+]
+
+TOOTH_NOTES = [
+    "Пломба композитная, состояние удовлетворительное.",
+    "Рекомендован контроль на следующем осмотре.",
+    "Имеется поверхностная пигментация эмали.",
+    "После эндодонтического лечения, без жалоб.",
+]
+
+PRESCRIPTION_INSTRUCTIONS = [
+    "После еды, запивать водой. Курс 5 дней.",
+    "При болевом синдроме, не более 3 раз в сутки.",
+    "Принимать строго по схеме, не пропускать прием.",
+    "Исключить алкоголь на период лечения.",
+    "При появлении сыпи прекратить прием и обратиться к врачу.",
+]
+
+RESEARCH_RESULTS = [
+    "Очаг деструкции костной ткани не выявлен.",
+    "Признаки хронического воспаления в проекции верхушки корня.",
+    "Пломбировочный материал в пределах корневого канала.",
+    "Патологических изменений со стороны ВНЧС не обнаружено.",
+    "Требуется консультация ортопеда по результатам снимка.",
+]
+
+WORK_MATERIALS = [
+    "Композитный материал, адгезив, коффердам.",
+    "Гуттаперча, силер, ирригационный раствор.",
+    "Анестетик артикаин, матрица, клинья.",
+    "Полировочные диски, антисептический раствор.",
+]
+
+REFERRAL_REASONS = [
+    "Уточнение диагноза перед началом лечения.",
+    "Необходима консультация смежного специалиста.",
+    "Подбор ортопедической конструкции.",
+    "Проведение дополнительной рентген-диагностики.",
+    "Исключение хирургической патологии.",
+]
+
 def create_test_users(session):
     """Создать тестовых пользователей"""
     print("👥 Создание пользователей...")
@@ -39,27 +143,27 @@ def create_test_users(session):
     users = [
         # Администраторы
         User(
-            username="admin",
+            username="admin@test.local",
             password_hash=get_password_hash("admin123"),
             role=UserRole.ADMIN,
             is_active=True
         ),
         # Менеджеры
         User(
-            username="manager",
+            username="manager@test.local",
             password_hash=get_password_hash("manager123"),
             role=UserRole.MANAGER,
             is_active=True
         ),
         # Стоматологи
         User(
-            username="dentist1",
+            username="dentist1@test.local",
             password_hash=get_password_hash("dentist123"),
             role=UserRole.DENTIST,
             is_active=True
         ),
         User(
-            username="dentist2",
+            username="dentist2@test.local",
             password_hash=get_password_hash("dentist123"),
             role=UserRole.DENTIST,
             is_active=True
@@ -83,8 +187,8 @@ def create_test_patients(session, count=20):
             birth_date=fake.date_of_birth(minimum_age=18, maximum_age=80),
             phone=fake.phone_number(),
             address=fake.address(),
-            allergies="Аллергия на пенициллин" if random.random() > 0.7 else None,
-            note=fake.text(max_nb_chars=100) if random.random() > 0.5 else None
+            allergies=random.choice(ALLERGIES),
+            note=random.choice(PATIENT_NOTES) if random.random() > 0.2 else None
         )
         patients.append(patient)
         session.add(patient)
@@ -118,7 +222,7 @@ def create_test_appointments(session, patients, dentists, count=30):
             date=date,
             time=datetime.strptime(time_str, "%H:%M:%S").time(),
             status=random.choice(statuses),
-            comment=fake.text(max_nb_chars=50) if random.random() > 0.5 else None
+            comment=random.choice(APPOINTMENT_COMMENTS) if random.random() > 0.2 else None
         )
         appointments.append(appointment)
         session.add(appointment)
@@ -143,11 +247,11 @@ def create_test_visits(session, patients, dentists, count=20):
             patient_id=patient.id,
             doctor_id=dentist.id,
             datetime=visit_date,
-            complaints=fake.text(max_nb_chars=100) if random.random() > 0.3 else None,
-            anamnesis=fake.text(max_nb_chars=200) if random.random() > 0.4 else None,
-            diagnosis=fake.text(max_nb_chars=80) if random.random() > 0.3 else None,
-            exam_results=fake.text(max_nb_chars=150) if random.random() > 0.5 else None,
-            notes=fake.text(max_nb_chars=120) if random.random() > 0.6 else None
+            complaints=random.choice(COMPLAINTS) if random.random() > 0.1 else None,
+            anamnesis=random.choice(ANAMNESIS) if random.random() > 0.15 else None,
+            diagnosis=random.choice(DIAGNOSES) if random.random() > 0.1 else None,
+            exam_results=random.choice(EXAM_RESULTS) if random.random() > 0.2 else None,
+            notes=random.choice(VISIT_NOTES) if random.random() > 0.25 else None
         )
         visits.append(visit)
         session.add(visit)
@@ -170,7 +274,7 @@ def create_test_teeth(session, patients):
                 patient_id=patient.id,
                 number=tooth_num,
                 status=random.choice(teeth_statuses),
-                notes=fake.text(max_nb_chars=50) if random.random() > 0.7 else None
+                notes=random.choice(TOOTH_NOTES) if random.random() > 0.4 else None
             )
             session.add(tooth)
             teeth_count += 1
@@ -195,7 +299,7 @@ def create_test_prescriptions(session, patients, visits, count=15):
             visit_id=visit.id if visit else None,
             medication=random.choice(medications),
             dosage=f"{random.randint(1, 3)} таблетки {random.randint(1, 3)} раза в день",
-            instructions=fake.text(max_nb_chars=80),
+            instructions=random.choice(PRESCRIPTION_INSTRUCTIONS),
             start_date=fake.date_between(start_date='-30d', end_date='today'),
             end_date=fake.date_between(start_date='today', end_date='+14d')
         )
@@ -220,9 +324,9 @@ def create_test_researches(session, patients, visits, count=10):
         research = Research(
             patient_id=patient.id,
             visit_id=visit.id if visit else None,
-            datetime=fake.date_time_between(start_date='-60d', end_date='today'),
+            datetime=fake.date_time_between(start_date='-60d', end_date='now'),
             type=random.choice(research_types),
-            result=fake.text(max_nb_chars=200) if random.random() > 0.3 else None
+            result=random.choice(RESEARCH_RESULTS) if random.random() > 0.2 else None
         )
         researches.append(research)
         session.add(research)
@@ -246,12 +350,12 @@ def create_test_works(session, visits, count=15):
             visit_id=visit.id,
             description=random.choice(work_descriptions),
             duration_minutes=random.choice([30, 45, 60, 90, 120]),
-            materials=fake.text(max_nb_chars=60) if random.random() > 0.5 else None,
+            materials=random.choice(WORK_MATERIALS) if random.random() > 0.2 else None,
             cost=random.randint(1000, 20000),
             status=random.choice(list(WorkStatus)),
             work_order_number=f"WO-{fake.date_this_year().strftime('%Y%m%d')}-{i:04d}",
             tooth_numbers=", ".join(map(str, random.sample(range(1, 33), random.randint(1, 3)))) if random.random() > 0.4 else None,
-            work_date=fake.date_time_between(start_date='-30d', end_date='today')
+            work_date=fake.date_time_between(start_date='-30d', end_date='now')
         )
         works.append(work)
         session.add(work)
@@ -278,11 +382,11 @@ def create_test_referrals(session, patients, dentists, visits, count=10):
             visit_id=visit.id if visit else None,
             referral_type=random.choice(list(ReferralType)),
             destination=random.choice(destinations),
-            reason=fake.text(max_nb_chars=100),
-            date=fake.date_time_between(start_date='-90d', end_date='today'),
+            reason=random.choice(REFERRAL_REASONS),
+            date=fake.date_time_between(start_date='-90d', end_date='now'),
             status=random.choice(list(ReferralStatus)),
-            result=fake.text(max_nb_chars=150) if random.random() > 0.4 else None,
-            notes=fake.text(max_nb_chars=80) if random.random() > 0.6 else None
+            result=random.choice(RESEARCH_RESULTS) if random.random() > 0.3 else None,
+            notes=random.choice(VISIT_NOTES) if random.random() > 0.4 else None
         )
         referrals.append(referral)
         session.add(referral)

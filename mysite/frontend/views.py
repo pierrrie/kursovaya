@@ -792,6 +792,259 @@ def dentist_referral_create_view(request):
     return render(request, "dentist_referral_form.html", {"patients": patients, "visits": visits})
 
 
+def dentist_research_view(request):
+    """История проведенных исследований"""
+    token = request.session.get("token")
+    role = request.session.get("role")
+
+    if not token or role != "dentist":
+        messages.error(request, "Только стоматолог может просматривать исследования")
+        return redirect("/")
+
+    headers = {"Authorization": f"Bearer {token}"}
+
+    resp = requests.get(f"{API_URL}/research/", headers=headers)
+    researches = [] if resp.status_code != 200 else get_json_or_empty(resp)
+
+    # Обогащаем список данными пациентов для отображения ФИО
+    patients = {p["id"]: p for p in get_patients_list(headers)}
+    for item in researches:
+        item["patient_name"] = patients.get(item.get("patient_id"), {}).get(
+            "full_name", f"Пациент #{item.get('patient_id')}"
+        )
+
+    return render(request, "dentist_research.html", {"researches": researches})
+
+
+def dentist_research_create_view(request):
+    """Добавление исследования"""
+    token = request.session.get("token")
+    role = request.session.get("role")
+
+    if not token or role != "dentist":
+        messages.error(request, "Только стоматолог может добавлять исследования")
+        return redirect("/")
+
+    headers = {"Authorization": f"Bearer {token}"}
+
+    if request.method == "POST":
+        patient_id = request.POST.get("patient_id")
+        visit_id = request.POST.get("visit_id")
+        datetime_value = request.POST.get("datetime")
+        research_type = request.POST.get("type")
+        result = request.POST.get("result")
+
+        if not patient_id or not datetime_value or not research_type:
+            messages.error(request, "Заполните обязательные поля: пациент, дата/время, тип")
+        else:
+            data = {
+                "datetime": datetime_value,
+                "type": research_type,
+                "result": result or None,
+            }
+            params = {}
+            if visit_id:
+                params["visit_id"] = int(visit_id)
+
+            resp = requests.post(
+                f"{API_URL}/research/patient/{int(patient_id)}",
+                json=data,
+                params=params,
+                headers=headers,
+            )
+            if resp.status_code in [200, 201]:
+                messages.success(request, "Исследование успешно добавлено")
+                return redirect("/dentist-documents/research/")
+            try:
+                error_msg = resp.json().get("detail", f"Статус код: {resp.status_code}")
+            except Exception:
+                error_msg = f"Статус код: {resp.status_code}"
+            messages.error(request, f"Ошибка: {error_msg}")
+
+    patients = get_patients_list(headers)
+
+    # Для удобства выбора показываем недавние визиты стоматолога
+    from datetime import datetime, timedelta
+
+    month_ago = (datetime.now() - timedelta(days=60)).isoformat()
+    resp = requests.get(f"{API_URL}/visits/?date_from={month_ago}", headers=headers)
+    visits = [] if resp.status_code != 200 else get_json_or_empty(resp)
+    patients_dict = {p["id"]: p for p in patients}
+    for visit in visits:
+        visit["patient_name"] = patients_dict.get(visit.get("patient_id"), {}).get(
+            "full_name", f"Пациент #{visit.get('patient_id')}"
+        )
+
+    return render(
+        request,
+        "dentist_research_form.html",
+        {"patients": patients, "visits": visits},
+    )
+
+
+def dentist_prescriptions_view(request):
+    """Назначения пациентам"""
+    token = request.session.get("token")
+    role = request.session.get("role")
+
+    if not token or role != "dentist":
+        messages.error(request, "Только стоматолог может работать с назначениями")
+        return redirect("/")
+
+    headers = {"Authorization": f"Bearer {token}"}
+    resp = requests.get(f"{API_URL}/prescriptions/", headers=headers)
+    prescriptions = [] if resp.status_code != 200 else get_json_or_empty(resp)
+
+    patients = {p["id"]: p for p in get_patients_list(headers)}
+    for item in prescriptions:
+        item["patient_name"] = patients.get(item.get("patient_id"), {}).get(
+            "full_name", f"Пациент #{item.get('patient_id')}"
+        )
+
+    return render(request, "dentist_prescriptions.html", {"prescriptions": prescriptions})
+
+
+def dentist_prescription_create_view(request):
+    """Добавление назначения пациенту"""
+    token = request.session.get("token")
+    role = request.session.get("role")
+
+    if not token or role != "dentist":
+        messages.error(request, "Только стоматолог может создавать назначения")
+        return redirect("/")
+
+    headers = {"Authorization": f"Bearer {token}"}
+
+    if request.method == "POST":
+        patient_id = request.POST.get("patient_id")
+        visit_id = request.POST.get("visit_id")
+        medication = request.POST.get("medication")
+        dosage = request.POST.get("dosage")
+        instructions = request.POST.get("instructions")
+        start_date = request.POST.get("start_date")
+        end_date = request.POST.get("end_date")
+
+        if not patient_id or not medication or not dosage or not start_date:
+            messages.error(request, "Заполните обязательные поля: пациент, препарат, дозировка, дата начала")
+        else:
+            data = {
+                "medication": medication,
+                "dosage": dosage,
+                "instructions": instructions or None,
+                "start_date": start_date,
+                "end_date": end_date or None,
+            }
+            params = {}
+            if visit_id:
+                params["visit_id"] = int(visit_id)
+            resp = requests.post(
+                f"{API_URL}/prescriptions/patient/{int(patient_id)}",
+                json=data,
+                params=params,
+                headers=headers,
+            )
+            if resp.status_code in [200, 201]:
+                messages.success(request, "Назначение успешно добавлено")
+                return redirect("/dentist-documents/prescriptions/")
+            try:
+                error_msg = resp.json().get("detail", f"Статус код: {resp.status_code}")
+            except Exception:
+                error_msg = f"Статус код: {resp.status_code}"
+            messages.error(request, f"Ошибка: {error_msg}")
+
+    patients = get_patients_list(headers)
+    from datetime import datetime, timedelta
+    month_ago = (datetime.now() - timedelta(days=60)).isoformat()
+    resp = requests.get(f"{API_URL}/visits/?date_from={month_ago}", headers=headers)
+    visits = [] if resp.status_code != 200 else get_json_or_empty(resp)
+    patients_dict = {p["id"]: p for p in patients}
+    for visit in visits:
+        visit["patient_name"] = patients_dict.get(visit.get("patient_id"), {}).get(
+            "full_name", f"Пациент #{visit.get('patient_id')}"
+        )
+
+    return render(request, "dentist_prescription_form.html", {"patients": patients, "visits": visits})
+
+
+def dentist_teeth_view(request):
+    """Зубная формула пациента"""
+    token = request.session.get("token")
+    role = request.session.get("role")
+
+    if not token or role != "dentist":
+        messages.error(request, "Только стоматолог может работать с зубной формулой")
+        return redirect("/")
+
+    headers = {"Authorization": f"Bearer {token}"}
+    patient_id = request.GET.get("patient_id")
+    teeth = []
+    selected_patient = None
+
+    patients = get_patients_list(headers)
+    if patient_id:
+        resp_patient = requests.get(f"{API_URL}/patients/{patient_id}", headers=headers)
+        if resp_patient.status_code == 200:
+            selected_patient = resp_patient.json()
+        resp = requests.get(f"{API_URL}/teeth/patient/{int(patient_id)}", headers=headers)
+        if resp.status_code == 200:
+            teeth = get_json_or_empty(resp)
+        else:
+            try:
+                error_msg = resp.json().get("detail", f"Статус код: {resp.status_code}")
+            except Exception:
+                error_msg = f"Статус код: {resp.status_code}"
+            messages.error(request, f"Ошибка загрузки зубной формулы: {error_msg}")
+
+    return render(
+        request,
+        "dentist_teeth.html",
+        {"patients": patients, "teeth": teeth, "selected_patient": selected_patient},
+    )
+
+
+def dentist_tooth_create_view(request):
+    """Добавление записи в зубную формулу"""
+    token = request.session.get("token")
+    role = request.session.get("role")
+
+    if not token or role != "dentist":
+        messages.error(request, "Только стоматолог может добавлять записи о зубах")
+        return redirect("/")
+
+    headers = {"Authorization": f"Bearer {token}"}
+
+    if request.method == "POST":
+        patient_id = request.POST.get("patient_id")
+        number = request.POST.get("number")
+        status_value = request.POST.get("status")
+        notes = request.POST.get("notes")
+
+        if not patient_id or not number or not status_value:
+            messages.error(request, "Заполните обязательные поля: пациент, номер зуба, статус")
+        else:
+            data = {
+                "number": int(number),
+                "status": status_value,
+                "notes": notes or None,
+            }
+            resp = requests.post(
+                f"{API_URL}/teeth/patient/{int(patient_id)}",
+                json=data,
+                headers=headers,
+            )
+            if resp.status_code in [200, 201]:
+                messages.success(request, "Запись о зубе добавлена")
+                return redirect(f"/dentist-documents/teeth/?patient_id={patient_id}")
+            try:
+                error_msg = resp.json().get("detail", f"Статус код: {resp.status_code}")
+            except Exception:
+                error_msg = f"Статус код: {resp.status_code}"
+            messages.error(request, f"Ошибка: {error_msg}")
+
+    patients = get_patients_list(headers)
+    return render(request, "dentist_tooth_form.html", {"patients": patients})
+
+
 def dentist_patient_history_view(request):
     """Выписка из медицинской карты"""
     token = request.session.get("token")

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>💊 Добавить назначение</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Пациент</label>
+                <select name="patient_id" class="form-control" required>
+                    <option value="">-- Выберите пациента --</option>
+                    {% for patient in patients %}
+                    <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Связанный визит (опционально)</label>
+                <select name="visit_id" class="form-control">
+                    <option value="">-- Без привязки к визиту --</option>
+                    {% for visit in visits %}
+                    <option value="{{ visit.id }}">{{ visit.patient_name }} - {{ visit.datetime|date:"d.m.Y H:i" }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Препарат</label>
+                <input type="text" name="medication" class="form-control" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Дозировка</label>
+                <input type="text" name="dosage" class="form-control" placeholder="Например: 1 таб 2 раза в день" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Инструкция</label>
+        <textarea name="instructions" class="form-control" rows="3" placeholder="Комментарий к приему"></textarea>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Дата начала</label>
+                <input type="date" name="start_date" class="form-control" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Дата окончания (опционально)</label>
+                <input type="date" name="end_date" class="form-control">
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Сохранить назначение</button>
+    <a href="/dentist-documents/prescriptions/" class="btn btn-secondary">Отмена</a>
+</form>
+{% endblock %}

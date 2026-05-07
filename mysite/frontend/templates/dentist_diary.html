@@ -3,6 +3,27 @@
 {% block content %}
 <h2>Дневник врача</h2>
 
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card border-primary">
+            <div class="card-header">
+                <h5 class="mb-0">⚡ Быстрые действия стоматолога</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/dentist-documents/research/" class="btn btn-dark">🔬 Исследования</a>
+                    <a href="/dentist-documents/prescriptions/" class="btn btn-secondary">💊 Назначения</a>
+                    <a href="/dentist-documents/teeth/" class="btn btn-danger">🦷 Зубная формула</a>
+                    <a href="/dentist-documents/referrals/" class="btn btn-primary">📄 Направления</a>
+                    <a href="/dentist-documents/work-orders/" class="btn btn-warning">🔧 Наряды на работы</a>
+                    <a href="/dentist-documents/patient-history/" class="btn btn-info">📋 Выписка из карты</a>
+                    <a href="/dentist-documents/medical-card/" class="btn btn-success">📄 Мед. карта 043/у</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row mb-4">
     <div class="col-md-12">
         <div class="btn-group" role="group">
@@ -96,23 +117,38 @@
                 <h5>📋 Документы и направления</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
+                <div class="row g-2">
+                    <div class="col-md-4 col-lg-3">
                         <a href="/dentist-documents/referrals/" class="btn btn-outline-primary btn-sm w-100 mb-2">
                             📄 Направления
                         </a>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4 col-lg-3">
+                        <a href="/dentist-documents/research/" class="btn btn-outline-dark btn-sm w-100 mb-2">
+                            🔬 Исследования
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-lg-3">
+                        <a href="/dentist-documents/prescriptions/" class="btn btn-outline-secondary btn-sm w-100 mb-2">
+                            💊 Назначения
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-lg-3">
+                        <a href="/dentist-documents/teeth/" class="btn btn-outline-danger btn-sm w-100 mb-2">
+                            🦷 Зубная формула
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-lg-3">
                         <a href="/dentist-documents/patient-history/" class="btn btn-outline-info btn-sm w-100 mb-2">
                             📋 Выписка из карты
                         </a>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4 col-lg-3">
                         <a href="/dentist-documents/medical-card/" class="btn btn-outline-success btn-sm w-100 mb-2">
                             📄 Мед. карта 043/у
                         </a>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4 col-lg-3">
                         <a href="/dentist-documents/work-orders/" class="btn btn-outline-warning btn-sm w-100 mb-2">
                             🔧 Наряды на работы
                         </a>

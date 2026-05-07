@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>🦷 Зубная формула пациента</h2>
+
+<div class="mb-4">
+    <a href="/dentist-documents/teeth/create/" class="btn btn-primary">➕ Добавить запись о зубе</a>
+    <a href="/dentist-diary/" class="btn btn-secondary">← Назад в дневник</a>
+</div>
+
+<form method="get" class="mb-4">
+    <div class="row">
+        <div class="col-md-8">
+            <select name="patient_id" class="form-control" required>
+                <option value="">-- Выберите пациента --</option>
+                {% for patient in patients %}
+                <option value="{{ patient.id }}" {% if selected_patient and selected_patient.id == patient.id %}selected{% endif %}>
+                    {{ patient.full_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-outline-primary w-100">Показать формулу</button>
+        </div>
+    </div>
+</form>
+
+{% if selected_patient %}
+<h5>Пациент: {{ selected_patient.full_name }}</h5>
+{% if teeth %}
+<div class="card">
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Зуб</th>
+                    <th>Статус</th>
+                    <th>Примечание</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in teeth %}
+                <tr>
+                    <td>{{ item.number }}</td>
+                    <td>{{ item.status }}</td>
+                    <td>{{ item.notes|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    Для этого пациента пока нет записей зубной формулы.
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

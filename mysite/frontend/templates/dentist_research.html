@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>🔬 История проведенных исследований</h2>
+
+<div class="mb-4">
+    <a href="/dentist-documents/research/create/" class="btn btn-primary">➕ Добавить исследование</a>
+    <a href="/dentist-diary/" class="btn btn-secondary">← Назад в дневник</a>
+</div>
+
+{% if researches %}
+<div class="card">
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Дата и время</th>
+                    <th>Пациент</th>
+                    <th>Тип исследования</th>
+                    <th>Результат</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in researches %}
+                <tr>
+                    <td>{{ item.datetime|date:"d.m.Y H:i" }}</td>
+                    <td>{{ item.patient_name }}</td>
+                    <td>{{ item.type }}</td>
+                    <td>{{ item.result|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    Исследований пока нет. Добавьте первое исследование.
+</div>
+{% endif %}
+{% endblock %}

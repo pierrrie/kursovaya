@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>🔬 Добавить исследование</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Пациент</label>
+                <select name="patient_id" class="form-control" required>
+                    <option value="">-- Выберите пациента --</option>
+                    {% for patient in patients %}
+                    <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Связанный визит (опционально)</label>
+                <select name="visit_id" class="form-control">
+                    <option value="">-- Без привязки к визиту --</option>
+                    {% for visit in visits %}
+                    <option value="{{ visit.id }}">{{ visit.patient_name }} - {{ visit.datetime|date:"d.m.Y H:i" }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Дата и время исследования</label>
+                <input type="datetime-local" name="datetime" class="form-control" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label>Тип исследования</label>
+                <input type="text" name="type" class="form-control" placeholder="Например: УЗИ, КТ, Рентген" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Результат</label>
+        <textarea name="result" class="form-control" rows="4" placeholder="Краткое заключение по исследованию"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Сохранить исследование</button>
+    <a href="/dentist-documents/research/" class="btn btn-secondary">Отмена</a>
+</form>
+{% endblock %}
